@@ -145,40 +145,36 @@ FORMS += \
     debug.ui
 
 # Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+unix: {
+    OPENSSL_LIB_PATH = /usr/lib
+    INCLUDEPATH += /usr/include
+    LIBS += -L$$OPENSSL_LIB_PATH -lcrypto -lssl
+}
 
-RESOURCES += \
-    application.qrc
+# Configuration Qt et cible
+QT += core gui network
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+TARGET = NxNandManager
+TEMPLATE = app
 
-QT += winextras
+CONFIG += c++11 console static create_prl link_prl object_parallel_to_source
+QMAKE_CXXFLAGS += -fpermissive -std=c++0x -pthread
+LIBS += -pthread
+DEFINES += QT_DEPRECATED_WARNINGS
 
+# Code source et bibliothèques
+SOURCES += \
+    ../NxFile.cpp \
+    # ... autres fichiers source ...
+
+HEADERS += \
+    ../NxFile.h \
+    # ... autres fichiers headers ...
+
+FORMS += \
+    emunand.ui \
+    # ... autres fichiers forms ...
+    
+RESOURCES += application.qrc
 RC_FILE = NxNandManager.rc
-
-CONFIG(ARCH32) {
-    DEFINES += ARCH32
-    #OPENSSL PATH
-    OPENSSL_LIB_PATH = $$PWD/../../../OpenSSL_mingw32
-    LIBS += -L$$PWD/../virtual_fs/dokan/x86/lib/ -ldokan1
-
-}
-CONFIG(ARCH64) {
-    DEFINES += ARCH64
-    #OPENSSL PATH
-    OPENSSL_LIB_PATH = $$PWD/../../../OpenSSL_mingw64
-    LIBS += -L$$PWD/../virtual_fs/dokan/x64/lib/ -ldokan1
-}
-
-INCLUDEPATH += $$PWD/../virtual_fs/dokan/include
-DEPENDPATH += $$PWD/../virtual_fs/dokan/include
-
-win32: LIBS += -L$${OPENSSL_LIB_PATH}/lib/ -lcrypto
-INCLUDEPATH += $${OPENSSL_LIB_PATH}/include
-DEPENDPATH += $${OPENSSL_LIB_PATH}/include
-
-win32:!win32-g++: PRE_TARGETDEPS += $${OPENSSL_LIB_PATH}/lib/crypto.lib
-else:win32-g++: PRE_TARGETDEPS += $${OPENSSL_LIB_PATH}/lib/libcrypto.a
-
-DISTFILES += \
-    images/explorer.png
+DISTFILES += images/explorer.png
