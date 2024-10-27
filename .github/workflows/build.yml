@@ -23,33 +23,19 @@ jobs:
             mingw64/mingw-w64-x86_64-qt5-static
             mingw-w64-x86_64-openssl
 
-      - name: Download and Install Dokan
-        shell: bash
+      - name: Download and extract Dokan
         run: |
-          # Spécifiez une version spécifique de Dokan (par exemple, 1.1.0)
-          curl -L -o dokan.zip https://github.com/dokan-dev/dokany/releases/download/v1.1.0/Dokan-1.1.0-x64.zip
-          
-          # Vérifiez si le téléchargement a réussi
-          if [ $? -ne 0 ]; then
-            echo "Failed to download Dokan"
-            exit 1
-          fi
+          $url = "https://github.com/dokan-dev/dokany/releases/download/v2.2.0.1000/dokan.zip"
+          $output = "dokan.zip"
+          Invoke-WebRequest -Uri $url -OutFile $output
+          Expand-Archive -Path $output -DestinationPath . -Force
+          Remove-Item $output
 
-          # Extraction
-          unzip dokan.zip -d dokan
-          
-          # Vérifiez si l'extraction a réussi
-          if [ ! -f dokan/Dokan1.dll ]; then
-            echo "Dokan1.dll not found"
-            exit 1
-          fi
-          
+      - name: Copy Dokan DLL
+        run: |
           # Copier le DLL dans le bon dossier
           mkdir -p /mingw64/bin
-          cp dokan/Dokan1.dll /mingw64/bin/
-          
-          # Cleanup
-          rm -rf dokan dokan.zip
+          cp .\dokan\x64\Release\Dokan1.dll /mingw64/bin/
 
       - name: Build
         shell: msys2 {0}
