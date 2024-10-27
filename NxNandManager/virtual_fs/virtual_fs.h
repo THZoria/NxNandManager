@@ -28,14 +28,23 @@ THE SOFTWARE.
 
 #ifndef virtual_fs_H_
 #define virtual_fs_H_
+
 #include "../gui/gui.h"
-#include <dokan/dokan.h>
-#include <dokan/fileinfo.h>
 #include "filenodes.h"
 #include "virtual_fs_operations.h"
-#include <winbase.h>
 #include <iostream>
 #include "../NxPartition.h"
+
+// Inclus uniquement sous Windows
+#ifdef _WIN32
+#include <dokan/dokan.h>
+#include <dokan/fileinfo.h>
+#include <winbase.h>
+#else
+// Inclus sous Linux
+#include <fuse.h>
+#include <memory>
+#endif
 
 #if defined(ENABLE_GUI)
 #include <QObject>
@@ -63,8 +72,8 @@ class virtual_fs
     // Unmount the device when destructor is called
     virtual ~virtual_fs();
 
-
-    // FileSystem mount options
+#ifdef _WIN32
+    // Champs spécifiques à Dokan
     WCHAR mount_point[4] = L"\0:\\";
     WCHAR unc_name[MAX_PATH] = L"";
     USHORT thread_number = 4;
@@ -76,10 +85,22 @@ class virtual_fs
     bool read_only = false;
     bool virtualize_nxa = false;
     ULONG timeout = 0;
+#else
+    // Champs spécifiques à FUSE
+    char mount_point[256] = "/mnt";  // Exemple pour FUSE
+    bool read_only = false;
+#endif
+
     NxPartition *partition;
 
-    void setDriveLetter(const wchar_t letter) { mount_point[0] = letter; }
+    // Méthodes spécifiques
+    void setDriveLetter(const wchar_t letter) {
+#ifdef _WIN32
+        mount_point[0] = letter;
+#endif
+    }
     void setReadOnly(bool state = true) { read_only = state; }
+
     void(*callback_func)(NTSTATUS) = nullptr;
     void setCallBackFunction(void(*func_ptr)(NTSTATUS)) {
         callback_func = func_ptr;
@@ -87,6 +108,7 @@ class virtual_fs
 
     // FileSystem context runtime
     std::unique_ptr<fs_filenodes> fs_filenodes;
+
 #if defined(ENABLE_GUI)
 signals:
     void dokan_callback(long res);
