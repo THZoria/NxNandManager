@@ -13,6 +13,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
@@ -21,7 +22,20 @@ jobs:
             mingw-w64-x86_64-toolchain
             mingw64/mingw-w64-x86_64-qt5-static
             mingw-w64-x86_64-openssl
-      - name: build
+
+      - name: Download and Install Dokan
+        run: |
+          # Téléchargement de la dernière version de Dokan
+          curl -L -o dokan.zip https://github.com/dokan-dev/dokany/releases/latest/download/Dokan-1.1.0-x64.zip
+          # Extraction
+          unzip dokan.zip -d dokan
+          # Copier le DLL dans le bon dossier
+          mkdir -p /mingw64/bin
+          cp dokan/Dokan1.dll /mingw64/bin/
+          # Cleanup
+          rm -rf dokan dokan.zip
+
+      - name: Build
         shell: msys2 {0}
         run: |
           ln -s $(pwd) ~/NxNandManager
@@ -30,7 +44,7 @@ jobs:
           make -j"$(nproc)"
           mkdir -p $GITHUB_WORKSPACE/bin
           cp release/NxNandManager.exe $GITHUB_WORKSPACE/bin
-          cp ../virtual_fs/dokan/x64/dokan1.dll $GITHUB_WORKSPACE/bin
+          cp /mingw64/bin/Dokan1.dll $GITHUB_WORKSPACE/bin
 
       - uses: actions/upload-artifact@v3
         with:
