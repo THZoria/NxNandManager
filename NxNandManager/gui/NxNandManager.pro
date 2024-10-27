@@ -145,36 +145,49 @@ FORMS += \
     debug.ui
 
 # Default rules for deployment.
-unix: {
-    OPENSSL_LIB_PATH = /usr/lib
-    INCLUDEPATH += /usr/include
-    LIBS += -L$$OPENSSL_LIB_PATH -lcrypto -lssl
+TEMPLATE = app
+TARGET = NxNandManager
+CONFIG += c++11 release
+
+# Dossiers sources et en-têtes
+SOURCES += main.cpp \
+           ../NxFile.cpp \
+           ../NxSave.cpp \
+           ../virtual_fs/virtual_fs.cpp \
+           # Ajoutez les autres fichiers sources ici
+           
+HEADERS += ../NxFile.h \
+           ../NxSave.h \
+           ../virtual_fs/virtual_fs.h \
+           # Ajoutez les autres fichiers d'en-têtes ici
+
+# Détection de l'architecture
+CONFIG(ARCH32) {
+    DEFINES += ARCH32
+    # Chemin vers OpenSSL
+    OPENSSL_LIB_PATH = $$PWD/../../../OpenSSL_mingw32
+    LIBS += -L$$PWD/../virtual_fs/dokan/x86/lib/ -ldokan1
+}
+CONFIG(ARCH64) {
+    DEFINES += ARCH64
+    # Chemin vers OpenSSL
+    OPENSSL_LIB_PATH = $$PWD/../../../OpenSSL_mingw64
+    LIBS += -L$$PWD/../virtual_fs/dokan/x64/lib/ -ldokan1
 }
 
-# Configuration Qt et cible
-QT += core gui network
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-TARGET = NxNandManager
-TEMPLATE = app
+# Définir les bibliothèques et préprocesseurs selon le système
+unix: {
+    LIBS += -lfuse
+    DEFINES += USE_FUSE
+}
+win32: {
+    LIBS += -L$$PWD/../virtual_fs/dokan/x64/lib/ -ldokan1
+    DEFINES += USE_DOKAN
+}
 
-CONFIG += c++11 console static create_prl link_prl object_parallel_to_source
-QMAKE_CXXFLAGS += -fpermissive -std=c++0x -pthread
-LIBS += -pthread
-DEFINES += QT_DEPRECATED_WARNINGS
-
-# Code source et bibliothèques
-SOURCES += \
-    ../NxFile.cpp \
-    # ... autres fichiers source ...
-
-HEADERS += \
-    ../NxFile.h \
-    # ... autres fichiers headers ...
-
-FORMS += \
-    emunand.ui \
-    # ... autres fichiers forms ...
-    
-RESOURCES += application.qrc
-RC_FILE = NxNandManager.rc
-DISTFILES += images/explorer.png
+# Inclure les chemins des bibliothèques Qt
+INCLUDEPATH += $$OPENSSL_LIB_PATH/include \
+               $$PWD/../virtual_fs \
+               $$PWD/../NxPartition
+               
+LIBS += -L$$OPENSSL_LIB_PATH/lib -lssl -lcrypto
