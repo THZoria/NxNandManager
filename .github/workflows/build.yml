@@ -6,29 +6,54 @@ on:
   pull_request:
     branches: [ "master" ]
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
+      # 1. Checkout du code
       - uses: actions/checkout@v3
+
+      # 2. Installer MSYS2 + toolchains GNU + Qt5 (base + WinExtras)
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MINGW64
-          install: >-
+          install: |
             base-devel
             mingw-w64-x86_64-toolchain
-            mingw64/mingw-w64-x86_64-qt5-static
+            mingw-w64-x86_64-qt5-base
+            mingw-w64-x86_64-qt5-winextras
+
+      # 3. Copier les headers Dokan depuis votre projet vers l'include système
+      - name: Installer les headers Dokan du projet
+        shell: msys2 {0}
+        run: |
+          # On part du workspace (où se trouve le dossier NxNandManager)
+          mkdir -p /include/dokan
+          cp -r NxNandManager/virtual_fs/dokan/include/dokan/* /include/dokan
+
+      # 4. Build dynamique 64-bits
       - name: build
         shell: msys2 {0}
         run: |
-          ln -s $(pwd) ~/NxNandManager
+          # On crée un symlink “~/NxNandManager” → workspace racine
+          ln -s "$(pwd)" ~/NxNandManager
+
+          # Puis on rentre dans le dossier qui contient “gui”
           cd ~/NxNandManager/NxNandManager/gui
-          /mingw64/qt5-static/bin/qmake.exe NxNandManager.pro 'CONFIG += STATIC ARCH64'
+
+          # Génération des Makefiles (sans STATIC) puis compilation
+          qmake NxNandManager.pro CONFIG+=ARCH64
           make -j"$(nproc)"
-          mkdir -p $GITHUB_WORKSPACE/bin
-          cp release/NxNandManager.exe $GITHUB_WORKSPACE/bin
-          cp ../virtual_fs/dokan/x64/dokan1.dll $GITHUB_WORKSPACE/bin
-      - uses: actions/upload-artifact@v3
+
+          # On collecte l’exe et la DLL Dokan
+          mkdir -p "$GITHUB_WORKSPACE/bin"
+          cp release/NxNandManager.exe "$GITHUB_WORKSPACE/bin"
+          cp ../virtual_fs/dokan/x64/dokan1.dll "$GITHUB_WORKSPACE/bin"
+
+      # 5. Upload des artefacts (upload-artifact@v4 n’est pas déprécié)
+      - uses: actions/upload-artifact@v4
         with:
           name: NxNandManager
           path: bin/*
