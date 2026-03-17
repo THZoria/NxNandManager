@@ -66,7 +66,7 @@ static NxStorageType NxTypesArr[] =
 
 // Title ID 0100000000000809 (SystemVersion)
 static NxSystemTitles systemTitlesArr[] = {
-    { "22.0.0", "cbf77f16ac79778d20fde55ac2f2257e.nca"}
+    { "22.0.0", "cbf77f16ac79778d20fde55ac2f2257e.nca"},
     { "21.2.0", "ac1ef488027ac5d9222d74393f03507f.nca"},
     { "21.1.0", "738da79326689ef4b72f702693bfc48a.nca"},
     { "21.0.1", "e7273dd5b560d0ba282fc64206fecb56.nca"},
