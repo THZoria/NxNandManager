@@ -66,6 +66,7 @@ static NxStorageType NxTypesArr[] =
 
 // Title ID 0100000000000809 (SystemVersion)
 static NxSystemTitles systemTitlesArr[] = {
+    { "22.2.0", "f1a867e9f4abb0d6e3c6682a148cff1a.nca"},
     { "22.1.0", "2464b8c4d9cd53c5d957faa6dc8e3788.nca"},
     { "22.0.0", "cbf77f16ac79778d20fde55ac2f2257e.nca"},
     { "21.2.0", "ac1ef488027ac5d9222d74393f03507f.nca"},
@@ -153,6 +154,7 @@ static NxSystemTitles systemTitlesArr[] = {
 
 // Title ID 010000000000081B (BootImagePackageExFat)
 static NxSystemTitles exFatTitlesArr[] = {
+    { "22.2.0", "1266424f83106345eea5503e51738e82.nca"},
     { "22.1.0", "fe3c3e687a54d43b1a31469f9d6c6172.nca"},
     { "22.0.0", "fe3c3e687a54d43b1a31469f9d6c6172 .nca"},
     { "21.2.0", "061e68902d7a8f431787428bd328a2fa.nca"},
